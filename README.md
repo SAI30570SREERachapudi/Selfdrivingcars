@@ -87,10 +87,22 @@ Contains all **100 Multiple-Choice Questions** across 4 core units:
 
 ---
 
-## 🌐 Netlify Deployment
+## 🌐 Render Deployment (Free Static Site)
 
-The project includes `public/_redirects` for Single Page Application handling.
-To deploy on Netlify:
-- **Build command**: `npm run build`
-- **Publish directory**: `dist`
+This project is pre-configured for **Render** via [render.yaml](render.yaml):
+
+1. Push your repository to **GitHub** or **GitLab**.
+2. Go to **[dashboard.render.com](https://dashboard.render.com/)**.
+3. Click **New +** > **Static Site**.
+4. Connect your GitHub/GitLab repository.
+5. Set the settings (if not auto-populated by `render.yaml`):
+   - **Name**: `autonomous-vehicles-quiz`
+   - **Branch**: `main` (or `master`)
+   - **Build Command**: `npm run build`
+   - **Publish Directory**: `dist`
+6. Under **Redirects / Rewrites**, add:
+   - **Type**: `Rewrite`
+   - **Source**: `/*`
+   - **Destination**: `/index.html`
+7. Click **Create Static Site**. Render will build and deploy it with a free `onrender.com` SSL URL.
 
