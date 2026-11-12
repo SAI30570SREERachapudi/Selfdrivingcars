@@ -3,6 +3,7 @@ import { X, CheckCircle, HelpCircle } from 'lucide-react';
 import { UNITS } from '../data/questions';
 
 export default function QuestionPalette({
+  questions = [],
   totalQuestions = 100,
   currentIndex,
   answers,
@@ -13,9 +14,12 @@ export default function QuestionPalette({
 }) {
   const answeredCount = Object.keys(answers).length;
 
-  const getQuestionState = (qId) => {
-    const isAnswered = answers[qId] !== undefined && answers[qId] !== null;
-    const isReview = !!markedForReview[qId];
+  const getQuestionState = (index) => {
+    const q = questions[index];
+    if (!q) return 'state-unanswered';
+
+    const isAnswered = answers[q.id] !== undefined && answers[q.id] !== null;
+    const isReview = !!markedForReview[q.id];
 
     if (isAnswered && isReview) {
       return 'state-review-answered'; // Purple
@@ -29,11 +33,16 @@ export default function QuestionPalette({
     return 'state-unanswered'; // Grey
   };
 
-  const handleUnitClick = (startId) => {
-    onSelectQuestion(startId - 1);
+  const handleUnitClick = (unitId) => {
+    // Jump to the first question belonging to this unit in the active attempt
+    const targetIdx = questions.findIndex((q) => q.unit === unitId);
+    if (targetIdx !== -1) {
+      onSelectQuestion(targetIdx);
+    }
   };
 
-  const currentUnitId = currentIndex < 25 ? 1 : currentIndex < 50 ? 2 : currentIndex < 75 ? 3 : 4;
+  const currentQ = questions[currentIndex];
+  const currentUnitId = currentQ?.unit || 1;
 
   return (
     <>
@@ -69,14 +78,13 @@ export default function QuestionPalette({
         {/* Quick Unit Jump Tabs */}
         <div className="unit-jump-tabs" title="Jump to Unit">
           {UNITS.map((u) => {
-            const startQ = (u.id - 1) * 25 + 1;
             const isActive = currentUnitId === u.id;
             return (
               <button
                 key={u.id}
                 type="button"
                 className={`unit-tab-btn ${isActive ? 'active' : ''}`}
-                onClick={() => handleUnitClick(startQ)}
+                onClick={() => handleUnitClick(u.id)}
               >
                 Unit {u.id}
               </button>
@@ -112,23 +120,22 @@ export default function QuestionPalette({
         <div className="palette-grid-scrollable">
           <div className="palette-grid">
             {Array.from({ length: totalQuestions }, (_, i) => {
-              const qId = i + 1;
               const isCurrent = i === currentIndex;
-              const stateClass = getQuestionState(qId);
+              const stateClass = getQuestionState(i);
 
               return (
                 <button
-                  key={qId}
+                  key={i}
                   type="button"
                   className={`palette-q-btn ${stateClass} ${isCurrent ? 'state-current' : ''}`}
                   onClick={() => {
                     onSelectQuestion(i);
                     if (isOpenMobile) onCloseMobile();
                   }}
-                  title={`Question ${qId}`}
-                  aria-label={`Question ${qId}, ${stateClass.replace('state-', '')}`}
+                  title={`Question ${i + 1}`}
+                  aria-label={`Question ${i + 1}, ${stateClass.replace('state-', '')}`}
                 >
-                  {qId}
+                  {i + 1}
                 </button>
               );
             })}
@@ -138,4 +145,3 @@ export default function QuestionPalette({
     </>
   );
 }
-

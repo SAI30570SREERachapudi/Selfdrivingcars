@@ -124,11 +124,12 @@ export default function AnswerReview({ questions, answers }) {
             No questions found matching the selected filter.
           </div>
         ) : (
-          filteredQuestions.map((q) => {
+          filteredQuestions.map((q, idx) => {
             const status = getQuestionStatus(q);
             const userAns = answers[q.id];
             const isCorrect = status === 'CORRECT';
             const isUnanswered = status === 'UNANSWERED';
+            const displayNum = idx + 1;
 
             let cardStatusClass = 'status-card-incorrect';
             if (isCorrect) cardStatusClass = 'status-card-correct';
@@ -143,7 +144,12 @@ export default function AnswerReview({ questions, answers }) {
                 <div className="review-card-header">
                   <div className="review-card-meta">
                     <span className="unit-indicator">Unit {q.unit}</span>
-                    <span className="question-number-badge">Question {q.id}</span>
+                    <span className="question-number-badge">Question {displayNum}</span>
+                    {q.originalId && (
+                      <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 500 }}>
+                        (Ref #{q.originalId})
+                      </span>
+                    )}
                   </div>
 
                   <div>
@@ -166,7 +172,7 @@ export default function AnswerReview({ questions, answers }) {
                 </div>
 
                 <div className="question-body">
-                  {q.id}. {q.question}
+                  {displayNum}. {q.question}
                 </div>
 
                 <div className="review-options-grid">
@@ -277,4 +283,3 @@ export default function AnswerReview({ questions, answers }) {
     </section>
   );
 }
-

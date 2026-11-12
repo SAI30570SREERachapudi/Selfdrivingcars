@@ -4,12 +4,14 @@ import { CheckCircle2, AlertCircle, HelpCircle } from 'lucide-react';
 
 export default function QuestionCard({
   question,
+  questionNumber,
   userAnswer,
   onSelectOption,
   totalQuestions = 100,
 }) {
   if (!question) return null;
 
+  const displayNum = questionNumber !== undefined ? questionNumber : question.id;
   const isAnswered = userAnswer !== undefined && userAnswer !== null;
   const isCorrect = isAnswered && userAnswer === question.correctAnswer;
   const optionsKeys = ['A', 'B', 'C', 'D'];
@@ -20,14 +22,19 @@ export default function QuestionCard({
         <div className="question-unit-info">
           <span className="unit-indicator">Unit {question.unit}</span>
           <span className="unit-title-text">{question.unitName}</span>
+          {question.originalId && question.originalId !== displayNum && (
+            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 500 }}>
+              (Ref #{question.originalId})
+            </span>
+          )}
         </div>
         <div className="question-number-badge">
-          Question {question.id} of {totalQuestions}
+          Question {displayNum} of {totalQuestions}
         </div>
       </div>
 
       <div className="question-body">
-        {question.id}. {question.question}
+        {displayNum}. {question.question}
       </div>
 
       <div className="options-list">
@@ -80,4 +87,3 @@ export default function QuestionCard({
     </div>
   );
 }
-

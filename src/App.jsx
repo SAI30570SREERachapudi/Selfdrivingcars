@@ -9,8 +9,9 @@ import ResultsDashboard from './components/ResultsDashboard';
 import AnswerReview from './components/AnswerReview';
 import { useTimer } from './hooks/useTimer';
 import { questions } from './data/questions';
+import { generateShuffledQuiz } from './utils/quizUtils';
 
-const STORAGE_KEY = 'autonomous_vehicles_quiz_state_v2';
+const STORAGE_KEY = 'autonomous_vehicles_quiz_state_v4';
 const EXAM_TOTAL_SECONDS = 5400; // 90 minutes for 100 questions
 
 export default function App() {
@@ -25,6 +26,18 @@ export default function App() {
       console.warn('Failed to parse saved state from localStorage:', e);
     }
     return null;
+  });
+
+  // Maintain the shuffled question set in React state across navigation & reloads
+  const [activeQuestions, setActiveQuestions] = useState(() => {
+    if (
+      initialData?.activeQuestions &&
+      Array.isArray(initialData.activeQuestions) &&
+      initialData.activeQuestions.length === 100
+    ) {
+      return initialData.activeQuestions;
+    }
+    return generateShuffledQuiz(questions);
   });
 
   const [currentIndex, setCurrentIndex] = useState(() => {
@@ -73,10 +86,11 @@ export default function App() {
     initialTimeLeft: initialData?.savedTimeLeft,
   });
 
-  // Persist state in localStorage
+  // Persist state in localStorage so refreshes do NOT reshuffle
   useEffect(() => {
     try {
       const stateToSave = {
+        activeQuestions,
         currentIndex,
         answers,
         markedForReview,
@@ -88,7 +102,7 @@ export default function App() {
     } catch (e) {
       console.warn('Failed to save state to localStorage:', e);
     }
-  }, [currentIndex, answers, markedForReview, isSubmitted, timeTakenSeconds, elapsedTime, timeLeft]);
+  }, [activeQuestions, currentIndex, answers, markedForReview, isSubmitted, timeTakenSeconds, elapsedTime, timeLeft]);
 
   // When submitted, freeze time taken
   useEffect(() => {
@@ -101,11 +115,11 @@ export default function App() {
   }, [isSubmitted, elapsedTime, pauseTimer, timeTakenSeconds]);
 
   const safeIndex =
-    typeof currentIndex === 'number' && currentIndex >= 0 && currentIndex < questions.length
+    typeof currentIndex === 'number' && currentIndex >= 0 && currentIndex < activeQuestions.length
       ? currentIndex
       : 0;
 
-  const currentQuestion = questions[safeIndex] || questions[0];
+  const currentQuestion = activeQuestions[safeIndex] || activeQuestions[0];
   const currentAnswer = currentQuestion ? answers[currentQuestion.id] : undefined;
   const isCurrentMarked = currentQuestion ? !!markedForReview[currentQuestion.id] : false;
 
@@ -123,9 +137,7 @@ export default function App() {
   }, [currentQuestion, answers]);
 
   // Clear Response - disabled once locked
-  const handleClearResponse = useCallback(() => {
-    // If the answer is already selected, user cannot change or re-roll answer
-  }, []);
+  const handleClearResponse = useCallback(() => {}, []);
 
   // Navigation handlers
   const handlePrevious = useCallback(() => {
@@ -133,12 +145,12 @@ export default function App() {
   }, []);
 
   const handleSaveAndNext = useCallback(() => {
-    if (safeIndex < questions.length - 1) {
+    if (safeIndex < activeQuestions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
       setShowSubmitModal(true);
     }
-  }, [safeIndex]);
+  }, [safeIndex, activeQuestions.length]);
 
   const handleToggleMarkForReview = useCallback(() => {
     if (!currentQuestion) return;
@@ -149,10 +161,10 @@ export default function App() {
   }, [currentQuestion]);
 
   const handleSelectQuestion = useCallback((index) => {
-    if (index >= 0 && index < questions.length) {
+    if (index >= 0 && index < activeQuestions.length) {
       setCurrentIndex(index);
     }
-  }, []);
+  }, [activeQuestions.length]);
 
   // Submit flow
   const handleSubmitConfirm = useCallback(() => {
@@ -162,9 +174,11 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [elapsedTime]);
 
-  // Restart flow
+  // Restart flow - generates brand new random order for questions & options
   const handleRestartConfirm = useCallback(() => {
     setShowRestartModal(false);
+    const freshShuffled = generateShuffledQuiz(questions);
+    setActiveQuestions(freshShuffled);
     setAnswers({});
     setMarkedForReview({});
     setCurrentIndex(0);
@@ -184,13 +198,12 @@ export default function App() {
 
   // Counts for modal
   const answeredCount = useMemo(() => Object.keys(answers).length, [answers]);
-  const unansweredCount = useMemo(() => questions.length - answeredCount, [answeredCount]);
+  const unansweredCount = useMemo(() => activeQuestions.length - answeredCount, [activeQuestions.length, answeredCount]);
   const reviewCount = useMemo(() => Object.values(markedForReview).filter(Boolean).length, [markedForReview]);
 
   // Keyboard navigation shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Don't intercept if an input is focused or modal is open
       if (showSubmitModal || showRestartModal || isSubmitted) return;
 
       if (e.key === 'ArrowRight') {
@@ -231,7 +244,7 @@ export default function App() {
         isSubmitted={isSubmitted}
         timeLeft={timeLeft}
         formatTime={formatTime}
-        totalQuestions={questions.length}
+        totalQuestions={activeQuestions.length}
         totalUnits={4}
         onTogglePalette={() => setIsMobilePaletteOpen((prev) => !prev)}
         isMobilePaletteOpen={isMobilePaletteOpen}
@@ -245,14 +258,15 @@ export default function App() {
             <section className="question-workspace" aria-label="Question Workspace">
               <QuestionCard
                 question={currentQuestion}
+                questionNumber={safeIndex + 1}
                 userAnswer={currentAnswer}
                 onSelectOption={handleSelectOption}
-                totalQuestions={questions.length}
+                totalQuestions={activeQuestions.length}
               />
 
               <QuizControls
-                currentIndex={currentIndex}
-                totalQuestions={questions.length}
+                currentIndex={safeIndex}
+                totalQuestions={activeQuestions.length}
                 hasAnswer={currentAnswer !== undefined}
                 isMarkedForReview={isCurrentMarked}
                 onPrevious={handlePrevious}
@@ -265,8 +279,9 @@ export default function App() {
 
             {/* Right Column: Question Palette */}
             <QuestionPalette
-              totalQuestions={questions.length}
-              currentIndex={currentIndex}
+              questions={activeQuestions}
+              totalQuestions={activeQuestions.length}
+              currentIndex={safeIndex}
               answers={answers}
               markedForReview={markedForReview}
               onSelectQuestion={handleSelectQuestion}
@@ -277,7 +292,7 @@ export default function App() {
         ) : (
           <div>
             <ResultsDashboard
-              questions={questions}
+              questions={activeQuestions}
               answers={answers}
               timeTakenFormatted={formatTime(timeTakenSeconds || elapsedTime)}
               onRestartClick={() => setShowRestartModal(true)}
@@ -286,7 +301,7 @@ export default function App() {
 
             <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px 64px 24px' }}>
               <AnswerReview
-                questions={questions}
+                questions={activeQuestions}
                 answers={answers}
               />
             </div>
@@ -297,7 +312,7 @@ export default function App() {
       {/* Confirmation Modals */}
       <SubmitConfirmation
         isOpen={showSubmitModal}
-        totalQuestions={questions.length}
+        totalQuestions={activeQuestions.length}
         answeredCount={answeredCount}
         unansweredCount={unansweredCount}
         reviewCount={reviewCount}
@@ -313,4 +328,3 @@ export default function App() {
     </>
   );
 }
-
