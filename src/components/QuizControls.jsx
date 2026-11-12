@@ -46,8 +46,7 @@ export default function QuizControls({
           disabled={!hasAnswer}
           title={hasAnswer ? "Clear response" : "No response selected"}
         >
-          <XCircle size={16} />
-          <span>Clear Response</span>
+
         </button>
       </div>
 
