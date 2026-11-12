@@ -1,0 +1,182 @@
+/* Professional Online Examination System Theme */
+:root {
+  /* Primary & Brand Colors */
+  --color-primary: #1e3a8a; /* Deep Navy */
+  --color-primary-hover: #1e40af;
+  --color-primary-light: #eff6ff;
+  --color-primary-border: #bfdbfe;
+
+  --color-secondary: #0f172a; /* Slate Dark */
+  --color-accent: #2563eb; /* Royal Blue */
+
+  /* Neutral Backgrounds & Surfaces */
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-subtle: #f1f5f9;
+  --bg-surface-hover: #e2e8f0;
+
+  /* Typography Colors */
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-light: #64748b;
+  --text-inverse: #ffffff;
+
+  /* Examination Palette Status Colors */
+  --status-answered: #10b981; /* Green */
+  --status-answered-bg: #ecfdf5;
+  --status-answered-border: #6ee7b7;
+
+  --status-unanswered: #94a3b8; /* Grey */
+  --status-unanswered-bg: #f8fafc;
+  --status-unanswered-border: #cbd5e1;
+
+  --status-current: #2563eb; /* Blue */
+  --status-current-bg: #eff6ff;
+  --status-current-border: #3b82f6;
+
+  --status-review: #f59e0b; /* Orange */
+  --status-review-bg: #fffbeb;
+  --status-review-border: #fcd34d;
+
+  --status-review-answered: #8b5cf6; /* Purple */
+  --status-review-answered-bg: #f5f3ff;
+  --status-review-answered-border: #c4b5fd;
+
+  --status-danger: #ef4444; /* Red */
+  --status-danger-bg: #fef2f2;
+  --status-danger-border: #fca5a5;
+
+  /* Layout & Geometry */
+  --header-height: 72px;
+  --sub-header-height: 52px;
+  --palette-width: 340px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+
+  /* Fonts */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+input, select, textarea {
+  font-family: inherit;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn var(--transition-normal) forwards;
+}
+
+/* Badge Utility */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.badge-primary {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-border);
+}
+
+.badge-success {
+  background: var(--status-answered-bg);
+  color: #065f46;
+  border: 1px solid var(--status-answered-border);
+}
+
+.badge-warning {
+  background: var(--status-review-bg);
+  color: #92400e;
+  border: 1px solid var(--status-review-border);
+}
+
+.badge-danger {
+  background: var(--status-danger-bg);
+  color: #991b1b;
+  border: 1px solid var(--status-danger-border);
+}
+
+.badge-neutral {
+  background: var(--bg-surface-subtle);
+  color: var(--text-muted);
+  border: 1px solid var(--status-unanswered-border);
+}
+
