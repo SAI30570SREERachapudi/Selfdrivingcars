@@ -100,12 +100,18 @@ export default function App() {
     }
   }, [isSubmitted, elapsedTime, pauseTimer, timeTakenSeconds]);
 
-  const currentQuestion = questions[currentIndex];
-  const currentAnswer = answers[currentQuestion.id];
-  const isCurrentMarked = !!markedForReview[currentQuestion.id];
+  const safeIndex =
+    typeof currentIndex === 'number' && currentIndex >= 0 && currentIndex < questions.length
+      ? currentIndex
+      : 0;
+
+  const currentQuestion = questions[safeIndex] || questions[0];
+  const currentAnswer = currentQuestion ? answers[currentQuestion.id] : undefined;
+  const isCurrentMarked = currentQuestion ? !!markedForReview[currentQuestion.id] : false;
 
   // Option selection - locked once selected
   const handleSelectOption = useCallback((letter) => {
+    if (!currentQuestion) return;
     if (answers[currentQuestion.id] !== undefined) {
       // User cannot change the option once selected
       return;
@@ -114,12 +120,11 @@ export default function App() {
       ...prev,
       [currentQuestion.id]: letter,
     }));
-  }, [currentQuestion.id, answers]);
+  }, [currentQuestion, answers]);
 
   // Clear Response - disabled once locked
   const handleClearResponse = useCallback(() => {
     // If the answer is already selected, user cannot change or re-roll answer
-    // Only if not answered, but nothing to clear
   }, []);
 
   // Navigation handlers
@@ -128,19 +133,20 @@ export default function App() {
   }, []);
 
   const handleSaveAndNext = useCallback(() => {
-    if (currentIndex < questions.length - 1) {
+    if (safeIndex < questions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
       setShowSubmitModal(true);
     }
-  }, [currentIndex]);
+  }, [safeIndex]);
 
   const handleToggleMarkForReview = useCallback(() => {
+    if (!currentQuestion) return;
     setMarkedForReview((prev) => ({
       ...prev,
       [currentQuestion.id]: !prev[currentQuestion.id],
     }));
-  }, [currentQuestion.id]);
+  }, [currentQuestion]);
 
   const handleSelectQuestion = useCallback((index) => {
     if (index >= 0 && index < questions.length) {
